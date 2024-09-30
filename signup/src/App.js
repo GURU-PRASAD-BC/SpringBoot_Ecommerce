@@ -10,6 +10,8 @@ import Footer from './components/Footer';
 import './App.css'; // Import CSS file for overall styling
 
 const App = () => {
+
+
     // Helper function to check if the user is authenticated
     const isAuthenticated = () => !!localStorage.getItem('token');
     
