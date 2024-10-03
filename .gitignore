@@ -1,3 +1,4 @@
 node_modules/*
 JMeter Tests/*
-report.html/*
+report.html
+SpringBoot_Ecommerce.postman_collection.json
