@@ -38,7 +38,8 @@ const Products = () => {
 
     return (
         <div className="products-container">
-            <h1>Products in Category {categoryId}</h1>
+            <h1>Products in Category {products[0]?.categoryName}</h1> {/* Display category name */}
+            <p>{products[0]?.categoryDescription}</p> {/* Display category description */}
             <div className="products-grid">
                 {currentProducts.map(product => (
                     <div className="product-card" key={product.id}>

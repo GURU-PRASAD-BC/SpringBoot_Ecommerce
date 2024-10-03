@@ -44,14 +44,11 @@ const Home = () => {
 
     return (
         <div className="home-container">
-            <h1>Categories</h1>
+             <h1>Categories</h1>
             {error && <p className="error-message">{error}</p>}
             
             {/* Search and Button Container */}
             <div className="search-container">
-                <Link to="/products">
-                    <button className="show-all-btn">Show All Products</button>
-                </Link>
                 <input 
                     type="text" 
                     placeholder="Search Categories" 
@@ -76,7 +73,9 @@ const Home = () => {
                     ))}
                 </div>
             </div>
-
+            <Link to="/products">
+                    <button className="show-all-btn">Show All Products</button>
+                </Link>
             {/* Pagination Controls */}
             <div className="pagination">
                 {Array.from({ length: totalPages }, (_, i) => (

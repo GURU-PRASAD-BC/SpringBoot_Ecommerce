@@ -15,7 +15,13 @@ const Header = () => {
 
     return (
         <div className="header">
+
+            {/* <Link to={`/home`}>
             <h1><b>E-MART SHOPPING</b></h1>
+            </Link> */}
+
+            <h1><b>E-MART SHOPPING</b></h1>
+
             {/* Show the logout button only if the user is authenticated */}
             {isAuthenticated && (
                 <button className="logout-btn" onClick={handleLogout}>

@@ -11,14 +11,13 @@ import './App.css'; // Import CSS file for overall styling
 
 const App = () => {
 
-
     // Helper function to check if the user is authenticated
     const isAuthenticated = () => !!localStorage.getItem('token');
     
     return (
         <div className="app-container">
-            {/* Show the Header if authenticated */}
-            {isAuthenticated() && <Header />}
+            {/* Always show the Header */}
+            <Header />
 
             {/* Main Content */}
             <div className="main-content">
@@ -30,23 +29,22 @@ const App = () => {
                     {/* Protected routes */}
                     <Route 
                         path="/home" 
-                        element={isAuthenticated() ? <Home /> : <Navigate to="/Home" />} 
+                        element={isAuthenticated() ? <Home /> : <Navigate to="/home" />} 
                     />
                     <Route 
                         path="/products/:categoryId" 
-                        element={isAuthenticated() ? <Products /> : <Navigate to="/Home" />} 
+                        element={isAuthenticated() ? <Products /> : <Navigate to="/products/:categoryId" />} 
                     />
 
                     <Route path="/products" element={<AllProducts />} />
 
-                    
                     {/* Default route */}
                     <Route path="/" element={<Navigate to="/signin" />} />
                 </Routes>
             </div>
 
-            {/* Show the Footer if authenticated */}
-            {isAuthenticated() && <Footer />}
+            {/* Always show the Footer */}
+            <Footer />
         </div>
     );
 };

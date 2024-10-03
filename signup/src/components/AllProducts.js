@@ -10,6 +10,7 @@ const AllProducts = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [productsPerPage] = useState(6); // 6 products per page
+    const [useElasticSearch, setUseElasticSearch] = useState(false); // Toggle state
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -27,14 +28,27 @@ const AllProducts = () => {
         fetchProducts();
     }, []);
 
-    // Filter products based on search term
+    // Handle search input and Elasticsearch
     useEffect(() => {
-        const filtered = products.filter(product =>
-            product.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredProducts(filtered);
-        setCurrentPage(1); // Reset to first page when search changes
-    }, [searchTerm, products]);
+        const searchProducts = async () => {
+            if (useElasticSearch) {
+                try {
+                    const response = await axios.get(`http://localhost:8082/auth/search?query=${searchTerm}`);
+                    setFilteredProducts(response.data);
+                } catch (err) {
+                    setError(err.message || 'Something went wrong with Elasticsearch');
+                }
+            } else {
+                const filtered = products.filter(product =>
+                    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                setFilteredProducts(filtered);
+            }
+            setCurrentPage(1); // Reset to first page when search changes
+        };
+
+        searchProducts();
+    }, [searchTerm, products, useElasticSearch]);
 
     // Pagination logic
     const indexOfLastProduct = currentPage * productsPerPage;
@@ -46,57 +60,50 @@ const AllProducts = () => {
 
     const renderPagination = () => {
         let pages = [];
-    const maxPagesToShow = 3; // Only show 3 pages at a time
-    const startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+        const maxPagesToShow = 3;
+        const startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
-    // First page and dots if currentPage is after page 3
-    if (currentPage > 2) {
-        pages.push(
-            <button
-                key={1}
-                className={`page-btn ${currentPage === 1 ? 'active' : ''}`}
-                onClick={() => paginate(1)}>
-                1
-            </button>
-        );
-        if (currentPage > 3) {
+        if (currentPage > 2) {
             pages.push(
-                <span key="start-dots" className="dots">...</span>
+                <button
+                    key={1}
+                    className={`page-btn ${currentPage === 1 ? 'active' : ''}`}
+                    onClick={() => paginate(1)}>
+                    1
+                </button>
+            );
+            if (currentPage > 3) {
+                pages.push(<span key="start-dots" className="dots">...</span>);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(
+                <button
+                    key={i}
+                    className={`page-btn ${currentPage === i ? 'active' : ''}`}
+                    onClick={() => paginate(i)}>
+                    {i}
+                </button>
             );
         }
-    }
 
-    // Visible pages
-    for (let i = startPage; i <= endPage; i++) {
-        pages.push(
-            <button
-                key={i}
-                className={`page-btn ${currentPage === i ? 'active' : ''}`}
-                onClick={() => paginate(i)}>
-                {i}
-            </button>
-        );
-    }
-
-    // Last page and dots if currentPage is far from last page
-    if (currentPage < totalPages - 1) {
-        if (currentPage < totalPages - 2) {
+        if (currentPage < totalPages - 1) {
+            if (currentPage < totalPages - 2) {
+                pages.push(<span key="end-dots" className="dots">...</span>);
+            }
             pages.push(
-                <span key="end-dots" className="dots">...</span>
+                <button
+                    key={totalPages}
+                    className={`page-btn ${currentPage === totalPages ? 'active' : ''}`}
+                    onClick={() => paginate(totalPages)}>
+                    {totalPages}
+                </button>
             );
         }
-        pages.push(
-            <button
-                key={totalPages}
-                className={`page-btn ${currentPage === totalPages ? 'active' : ''}`}
-                onClick={() => paginate(totalPages)}>
-                {totalPages}
-            </button>
-        );
-    }
 
-    return pages;
+        return pages;
     };
 
     if (loading) return <div>Loading...</div>;
@@ -104,16 +111,26 @@ const AllProducts = () => {
 
     return (
         <div className="all-products-container">
-
             <div className="search-container">
-            <h1>All Products</h1>
-            <input 
-                type="text" 
-                placeholder="Search Products" 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className="search-bar"
-            />
+                <h1>All Products</h1>
+                <div className="search-controls">
+                <input 
+                    type="text" 
+                    placeholder="Search Products" 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    className="search-bar"
+                />
+                <label className="elastic-switch">
+                    <input 
+                        type="checkbox" 
+                        checked={useElasticSearch} 
+                        onChange={() => setUseElasticSearch(!useElasticSearch)} 
+                    />
+                    <span className="slider"></span>
+                </label>
+                <span className="elastic-label">Elastic Search</span>
+            </div>
             </div>
 
             <div className="products-grid">
@@ -124,9 +141,11 @@ const AllProducts = () => {
                         <div className="product-card" key={product.id}>
                             <h3>{product.name}</h3>
                             <img src={product.imageUrl} alt={product.name} />
-                            <p>Original Price: <b>${product.originalPrice}</b></p>
-                            <p>Discounted Price: <b>${product.discountedPrice}</b></p>
-                            <p>Stock: <b>{product.stockCount}</b></p>
+                            <p><strong>Original Price: </strong>${product.originalPrice}</p>
+                            <p><strong>Discounted Price: </strong>${product.discountedPrice}</p>
+                            <p><strong>Stock: </strong>{product.stockCount}</p>
+                            <p><strong>Category: </strong>{product.categoryName}</p> {/* Display category name */}
+                            <p><strong>Description: </strong>{product.description}</p> {/* Display description */}
                             <button className="buy-now-btn">Buy Now</button>
                             <button className="add-to-cart-btn">Add to Cart</button>
                         </div>
@@ -134,7 +153,6 @@ const AllProducts = () => {
                 )}
             </div>
 
-            {/* Pagination Controls */}
             <div className="pagination">
                 {renderPagination()}
             </div>

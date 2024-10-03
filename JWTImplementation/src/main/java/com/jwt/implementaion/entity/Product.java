@@ -26,6 +26,8 @@ public class Product {
     private double discounted_price;
     private int stock_count;
     private String image_url;
+    private String category_name;
+    private String description; 
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -53,4 +55,10 @@ public class Product {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    
+    public String getCategoryName() {return category_name;}
+    public void setCategoryName(String categoryName) {this.category_name = categoryName;}
+
+    public String getDescription(){return description;}
+    public void setDescription(String description) {this.description = description;}
 }
